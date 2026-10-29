@@ -1,0 +1,101 @@
+name: Windows build and optional Foundation signing
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic version for the build
+        required: true
+        default: '0.6.0'
+        type: string
+      request_signature:
+        description: Request signing only after SignPath Foundation acceptance
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    outputs:
+      artifact_id: ${{ steps.package.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+      - name: Install test media tools on the runner
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+          }
+          ffmpeg -version
+          ffprobe -version
+      - name: Build, test and publish from source
+        shell: pwsh
+        env:
+          BUILD_VERSION: ${{ inputs.version }}
+        run: ./scripts/Build-CI.ps1 -Version $env:BUILD_VERSION
+      - name: Preserve test reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-reports
+          path: artifacts/ci/tests/*.trx
+          if-no-files-found: warn
+      - name: Store unsigned release for provenance verification
+        id: package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: metanoia-windows-unsigned
+          path: artifacts/ci/unsigned/
+          if-no-files-found: error
+
+  sign:
+    if: inputs.request_signature && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 30
+    environment: release-signing
+    steps:
+      - name: Confirm approved signing configuration exists
+        shell: pwsh
+        env:
+          API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          ORG_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          POLICY_SLUG: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+        run: |
+          foreach ($name in @('API_TOKEN', 'ORG_ID', 'PROJECT_SLUG', 'POLICY_SLUG')) {
+            if (-not [Environment]::GetEnvironmentVariable($name)) { throw "Missing approved SignPath configuration: $name" }
+          }
+      - name: Request Foundation signature
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-id: ${{ needs.build.outputs.artifact_id }}
+          output-artifact-directory: artifacts/signed
+          wait-for-completion: true
+      - name: Reject output without a valid signature
+        shell: pwsh
+        run: |
+          $file = 'artifacts/signed/Metanoia.App.exe'
+          $signature = Get-AuthenticodeSignature -LiteralPath $file
+          if ($signature.Status -ne 'Valid') { throw "Signing verification failed: $($signature.Status)" }
+      - name: Store verified signed release
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: metanoia-windows-signed
+          path: artifacts/signed/
+          if-no-files-found: error

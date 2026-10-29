@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+.vs/
+.vscode/
+.dotnet/
+.nuget/
+artifacts/
+tests/Fixtures/
+*.user
+*.suo
+.env
+.env.*
+*.pfx
+*.p12
+*.key

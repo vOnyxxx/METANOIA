@@ -1,0 +1,127 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="clr-namespace:Metanoia.App.Controls" xmlns:views="clr-namespace:Metanoia.App.Views" x:Class="Metanoia.App.Views.AudioWorkspaceView">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="310"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="100"/>
+                <RowDefinition Height="18"/>
+                <RowDefinition/>
+                <RowDefinition Height="18"/>
+                <RowDefinition Height="210"/>
+            </Grid.RowDefinitions>
+            <Border Style="{StaticResource GlassCard}" Padding="20,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{Binding SelectedFileName}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding MediaSummary}" FontSize="10" Foreground="{StaticResource FogBrush}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" x:Name="AudioTimeDisplay" Text="00:00 / 00:00" FontSize="25" FontFamily="Consolas" Foreground="{StaticResource ElectricCyanBrush}" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+            <Border Grid.Row="2" Style="{StaticResource GlassCard}" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <ComboBox ItemsSource="{Binding AudioVisualizations}" SelectedItem="{Binding SelectedAudioVisualization}" Width="190" HorizontalAlignment="Left"/>
+                        <TextBlock Text="{Binding AudioPreviewStatus}" Foreground="{StaticResource FogBrush}" FontSize="10" MaxWidth="300" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                    </Grid>
+                    <Grid x:Name="AudioVisualArea" Grid.Row="1" Margin="0,16">
+                        <Border Background="#55080D11" CornerRadius="8"/>
+                        <Image Source="{Binding AudioDisplayImage}" Stretch="Fill" Margin="12"/>
+                        <Border x:Name="AudioPlayhead" Width="1" HorizontalAlignment="Left" Background="{StaticResource AcidLimeBrush}" Margin="12,12,0,12" IsHitTestVisible="False"/>
+                        <MediaElement x:Name="AudioMonitor" LoadedBehavior="Manual" UnloadedBehavior="Stop" Visibility="Hidden" MediaOpened="OnMediaOpened" MediaEnded="OnMediaEnded" MediaFailed="OnMediaFailed"/>
+                    </Grid>
+                    <Slider x:Name="AudioTimelineSlider" Grid.Row="2" Minimum="0" Maximum="1" PreviewMouseLeftButtonDown="OnTimelineMouseDown" PreviewMouseLeftButtonUp="OnTimelineMouseUp" PreviewKeyUp="OnTimelineKeyUp" ValueChanged="OnTimelineValueChanged"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+                        <Button Content="▶" Click="OnPlayClick" Style="{StaticResource ToolButton}" ToolTip="Reproducir"/>
+                        <Button Content="Ⅱ" Click="OnPauseClick" Style="{StaticResource ToolButton}" Margin="10,0" ToolTip="Pausar"/>
+                        <Button Content="■" Click="OnStopClick" Style="{StaticResource ToolButton}" ToolTip="Detener"/>
+                        <Button Content="Escuchar ajustes" Command="{Binding GenerateAudioPreviewCommand}" Style="{StaticResource NavButton}" Margin="18,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Grid.Row="4" IsEnabled="{Binding IsExporting, Converter={StaticResource InverseBooleanConverter}}" Style="{StaticResource GlassCard}" Padding="20">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="ECUALIZADOR · dB" FontSize="11" Foreground="{StaticResource ElectricCyanBrush}"/>
+                        <Button Content="Restablecer EQ" Command="{Binding ResetEqualizerCommand}" Style="{StaticResource NavButton}" HorizontalAlignment="Right" MinHeight="24" Padding="6,2"/>
+                    </Grid>
+                    <UniformGrid Columns="4" Margin="0,18,0,0">
+                        <StackPanel Margin="0,0,18,0">
+                            <c:ParameterSlider Label="Graves · 100 Hz" Minimum="-12" Maximum="12" Value="{Binding AudioLowGain, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,18,0">
+                            <c:ParameterSlider Label="Medios · 1 kHz" Minimum="-12" Maximum="12" Value="{Binding AudioMidGain, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,18,0">
+                            <c:ParameterSlider Label="Agudos · 8 kHz" Minimum="-12" Maximum="12" Value="{Binding AudioHighGain, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,18,0">
+                            <c:ParameterSlider Label="Ganancia" Minimum="-12" Maximum="12" Value="{Binding AudioGain, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </UniformGrid>
+                    <TextBlock Text="Los ajustes se aplican a la escucha previa y a la exportación." Style="{StaticResource SecondaryText}" FontSize="10"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+        <Border Grid.Column="3" IsEnabled="{Binding IsExporting, Converter={StaticResource InverseBooleanConverter}}" Style="{StaticResource GlassCard}" Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Inspector" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="FORMATO" Style="{StaticResource InspectorHeading}"/>
+                        <ComboBox ItemsSource="{Binding AudioFormats}" SelectedItem="{Binding SelectedAudioFormat}"/>
+                        <TextBlock Text="FRECUENCIA DE MUESTREO" Style="{StaticResource InspectorHeading}"/>
+                        <ComboBox ItemsSource="{Binding AudioSampleRates}" SelectedItem="{Binding SelectedAudioSampleRate}"/>
+                        <TextBlock Text="CANALES" Style="{StaticResource InspectorHeading}"/>
+                        <ComboBox ItemsSource="{Binding AudioChannelModes}" SelectedItem="{Binding SelectedAudioChannels}"/>
+                        <TextBlock Text="RECORTE · SEGUNDOS" Style="{StaticResource InspectorHeading}"/>
+                        <c:ParameterSlider Label="Entrada" Minimum="0" Maximum="{Binding AudioDurationSeconds}" Value="{Binding AudioTrimStartSeconds, Mode=TwoWay}"/>
+                        <c:ParameterSlider Label="Duración · 0 = completa" Minimum="0" Maximum="{Binding AudioDurationSeconds}" Value="{Binding AudioTrimDurationSeconds, Mode=TwoWay}"/>
+                        <CheckBox Content="Normalizar sonoridad · 2 pasadas" IsChecked="{Binding NormalizeAudio}"/>
+                        <c:ParameterSlider Label="Objetivo · LUFS" Minimum="-36" Maximum="-5" Value="{Binding AudioTargetLufs, Mode=TwoWay}"/>
+                        <c:ParameterSlider Label="Techo · dBTP" Minimum="-9" Maximum="0" Value="{Binding AudioTruePeakDb, Mode=TwoWay}"/>
+                        <Expander Header="Herramientas FFmpeg">
+                            <views:FilterToolView Margin="0,12,0,0"/>
+                        </Expander>
+                        <TextBlock Text="EXPORTACIÓN" Style="{StaticResource InspectorHeading}"/>
+                        <TextBox Text="{Binding AudioOutputPath, UpdateSourceTrigger=LostFocus}" FontSize="10" ToolTip="Ruta de salida"/>
+                        <Button Content="Cambiar destino" Command="{Binding SelectAudioOutputCommand}" Style="{StaticResource SecondaryButton}" Margin="0,8,0,14"/>
+                        <Button Content="Abrir carpeta" Command="{Binding OpenAudioOutputFolderCommand}" Style="{StaticResource SecondaryButton}"/>
+                        <Expander Header="Más formatos · FFmpeg">
+                            <views:FormatExportView Margin="0,12,0,0"/>
+                        </Expander>
+                        <Expander Header="Comando FFmpeg">
+                            <StackPanel>
+                                <TextBox Text="{Binding AudioCommandDisplay, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" FontSize="10" MaxHeight="140" VerticalScrollBarVisibility="Auto" Margin="0,8,0,8"/>
+                                <Button Content="Copiar comando" Command="{Binding CopyAudioCommandCommand}" Style="{StaticResource SecondaryButton}"/>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+                <StackPanel Grid.Row="1" Margin="0,16,0,0">
+                    <TextBlock Text="{Binding AudioOutputPath}" FontSize="9" Foreground="{StaticResource FogBrush}" TextTrimming="CharacterEllipsis" Margin="0,0,0,10"/>
+                    <Button Content="Exportar audio" Command="{Binding ProcessAudioCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

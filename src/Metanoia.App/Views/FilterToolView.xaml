@@ -1,0 +1,22 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="clr-namespace:Metanoia.App.Controls" x:Class="Metanoia.App.Views.FilterToolView">
+    <StackPanel>
+        <TextBlock Text="Filtros de una entrada disponibles en este motor" Style="{StaticResource SecondaryText}" Margin="0,0,0,12"/>
+        <ComboBox ItemsSource="{Binding AvailableFilters}" SelectedItem="{Binding SelectedEngineFilter}"/>
+        <ItemsControl ItemsSource="{Binding FilterParameters}" Margin="0,16,0,0">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <c:ParameterSlider Label="{Binding Name}" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" Value="{Binding Value}" Step="{Binding Step}" Snap="{Binding Integral}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Expander Header="Parámetros y documentación">
+            <StackPanel>
+                <TextBox Text="{Binding CustomFilterParameters}" ToolTip="Por ejemplo: sigma=2 o strength=0.5"/>
+                <TextBox Text="{Binding FilterHelp, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" FontSize="10" MaxHeight="220" VerticalScrollBarVisibility="Auto" Margin="0,10,0,0"/>
+            </StackPanel>
+        </Expander>
+        <Button Content="Aplicar filtro" Command="{Binding ApplyEngineFilterCommand}" Style="{StaticResource CompactButton}" Margin="0,8"/>
+        <Button Content="Quitar filtro" Command="{Binding ClearEngineFilterCommand}" Style="{StaticResource SecondaryButton}"/>
+        <TextBlock Text="{Binding FilterStatus}" Style="{StaticResource SecondaryText}" FontSize="10" Margin="0,10,0,0"/>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,12 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Metanoia.App.Views.FormatExportView">
+    <StackPanel>
+        <TextBlock Text="{Binding CapabilitySummary}" Style="{StaticResource SecondaryText}" FontSize="10" Margin="0,0,0,12"/>
+        <ComboBox ItemsSource="{Binding CompatibleContainers}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedContainer}"/>
+        <TextBox Text="{Binding CatalogOutputPath, UpdateSourceTrigger=LostFocus}" FontSize="10" Margin="0,10,0,8"/>
+        <Button Content="Destino" Command="{Binding SelectCatalogOutputCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8"/>
+        <Button Content="Exportar formato seleccionado" Command="{Binding ExportCatalogCommand}" Style="{StaticResource CompactButton}"/>
+        <Expander Header="Revisar comando">
+            <TextBox Text="{Binding CatalogCommandDisplay, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas" FontSize="10" TextWrapping="Wrap" MaxHeight="180" VerticalScrollBarVisibility="Auto"/>
+        </Expander>
+    </StackPanel>
+</UserControl>
