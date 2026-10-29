@@ -11,6 +11,7 @@ public sealed class InterfaceToolsIntegrationTests
     public async Task OggCanBeDecodedEqualizedAndConvertedToFlac()
     {
         var tools = new FFToolsSettingsService(); var runner = new FFmpegRunner(new FFmpegProgressParser());
+        Directory.CreateDirectory(TestPaths.Fixtures);
         var sourcePath = Path.Combine(TestPaths.Fixtures, "interface-source.ogg"); Directory.CreateDirectory(TestPaths.Results);
         var generated = await runner.RunAsync(new FFmpegCommand(tools.FFmpegPath!, ["-y", "-f", "lavfi", "-i", "sine=frequency=100:duration=2", "-c:a", "libvorbis", sourcePath]), null);
         Assert.True(generated.Succeeded, generated.StandardError);
