@@ -27,7 +27,7 @@ Download the current unsigned pre-release package from [GitHub Actions build #1]
 
 The Windows workflow is manually dispatched from GitHub Actions and produces an explicitly **unsigned** build by default. Unsigned pre-release binaries may be blocked by Windows Smart App Control. Do not disable security protections to run them.
 
-SignPath Foundation application preparation is in progress. No approval or production signature has been obtained. Only an artifact marked signed and passing Authenticode verification should be described as signed. A reproducible GitHub build is preparation for signing, not an immediate workaround for the block.
+The SignPath Foundation application was submitted on 2026-10-30 and is awaiting review. No approval or production signature has been obtained. Only an artifact marked signed and passing Authenticode verification should be described as signed. A reproducible GitHub build is preparation for signing, not an immediate workaround for the block.
 
 ## Code signing policy
 

@@ -1,6 +1,6 @@
 # Code signing policy — pending Foundation approval
 
-METANOIA is preparing an application to SignPath Foundation. No Foundation certificate or project approval has been received, and the currently available executable is unsigned. We do not claim SignPath currently signs this project.
+METANOIA submitted an application to SignPath Foundation on 2026-10-30; receipt was confirmed by the application form. No Foundation certificate or project approval has been received, and the currently available executable is unsigned. We do not claim SignPath currently signs this project.
 
 ## Team
 
